@@ -77,9 +77,27 @@ from pinecone import Pinecone
 import logging
 from langchain_core.documents import Document
 
-# Initialize Pinecone
-pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-index_name = os.getenv("PINECONE_INDEX_NAME")
+# Global placeholders
+_pc = None
+_index = None
+
+def get_pinecone_index():
+    """
+    Lazy-initializes Pinecone to avoid module-level startup crashes.
+    """
+    global _pc, _index
+    if _pc is None:
+        api_key = os.getenv("PINECONE_API_KEY")
+        index_name = os.getenv("PINECONE_INDEX_NAME")
+        
+        if not api_key:
+            raise ValueError("CRITICAL: PINECONE_API_KEY is not set in environment variables.")
+        if not index_name:
+            raise ValueError("CRITICAL: PINECONE_INDEX_NAME is not set in environment variables.")
+            
+        _pc = Pinecone(api_key=api_key)
+        _index = _pc.Index(index_name)
+    return _index
 
 def get_embeddings_model():
     """
@@ -96,7 +114,7 @@ async def save_to_pinecone(chunks, doc_id: int):
     Directly upserts vectors to Pinecone avoiding LangChain's broken wrapper.
     """
     embeddings_model = get_embeddings_model()
-    index = pc.Index(index_name)
+    index = get_pinecone_index()
     
     # 1. Prepare vectors for upsert
     vectors_to_upsert = []
@@ -136,7 +154,7 @@ async def similarity_search(query: str, pdf_ids: List[int], k: int = 3):
         return []
         
     embeddings_model = get_embeddings_model()
-    index = pc.Index(index_name)
+    index = get_pinecone_index()
     
     # 1. Generate query embedding
     query_vector = embeddings_model.embed_query(query)
