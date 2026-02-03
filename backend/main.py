@@ -17,7 +17,11 @@ app = FastAPI(
 # 3. Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins for deployment flexibility
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://pdf-qa-azure.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
