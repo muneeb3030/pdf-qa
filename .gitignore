@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+backend/.env
+*.db
+backend/*.db
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+
+# Local Vector Storage (Old FAISS)
+storage/
+backend/storage/
+backend/faiss_index/
+
+# Test Files
+test_manual*.pdf
+
+# Logging
+*.log
+backend/*.log
+
+# Project specific
+backend/test_db.py
+backend/debug_pinecone.py
+backend/test_signup.py
+sql_app.db
+pdf_genie.db
