@@ -1,9 +1,6 @@
 # Use official Python image
 FROM python:3.9
 
-# Set working directory
-WORKDIR /app
-
 # Install system dependencies for OCR (EasyOCR/pdf2image)
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
@@ -11,18 +8,22 @@ RUN apt-get update && apt-get install -y \
     poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only the backend requirements first for caching
-COPY backend/requirements.txt .
+# Set up a new user 'user' with UID 1000
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /app
+
+# Copy and install requirements as user
+COPY --chown=user backend/requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy the rest of the backend code
-COPY backend/ .
+COPY --chown=user backend/ .
 
-# Expose the port (Hugging Face uses 7860 by default)
+# Expose the port (Hugging Face uses 7860)
 EXPOSE 7860
 
 # Run the application
-# We use 0.0.0.0 to allow external connections in the container
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
