@@ -36,8 +36,11 @@ app.include_router(users.router)
 # 5. Health Check
 @app.get("/", tags=["Health"])
 async def health_check():
+    from database import SQLALCHEMY_DATABASE_URL
+    db_type = "PostgreSQL" if SQLALCHEMY_DATABASE_URL.startswith("postgresql") else "SQLite"
     return {
         "status": "online",
         "message": "PDF Q&A Backend is running successfully!",
-        "version": "1.0.0"
+        "database": db_type,
+        "version": "1.0.1"
     }
